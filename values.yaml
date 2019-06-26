@@ -1,0 +1,251 @@
+replicaCount: 1
+expose:
+  type: ingress
+  tls:
+    enabled: false
+    secretName: ""
+  ingress:
+    host:
+      ui: www.smilelxy.cn
+    annotations:
+      kubernetes.io/ingress.class: nginx
+  nodePort: 30002    
+
+imagePullSecrets: 
+- name: smile
+
+common:
+  ns: dev
+  pod:
+    probes:
+      livenessProbe:
+        httpGet:
+          path: /_status/healthz
+          port: 5000
+        initialDelaySeconds: 90
+        timeoutSeconds: 10
+      readinessProbe:
+        httpGet:
+          path: /_status/healthz
+          port: 5000
+        initialDelaySeconds: 30
+        timeoutSeconds: 10
+    env: 
+    - name: DIY_EUREKA_HOST_MASTER
+      value: "eureka-master.dev.svc.cluster.local"
+    - name: DIY_EUREKA_HOST_BACKUP01
+      value: "eureka-backup01.dev.svc.cluster.local"
+    - name: DIY_EUREKA_HOST_BACKUP02
+      value: "eureka-backup02.dev.svc.cluster.local"
+    - name: DIY_EUREKA_SERVER_PORT
+      value: "8761"
+    - name: DIY_EUREKA_USER
+      value: "smile"
+    - name: DIY_EUREKA_PASSWORD
+      value: "smilelxy"
+    - name: CONFIG_PROFILE
+      value: "master"
+    ports:
+    - name:  server-port
+      containerPort:  8080
+      protocol: TCP 
+    volumeMounts:
+    volumes:
+  services:
+    ports:
+    - name: service-port
+      port: 8080
+      targetPort: server-port
+      protocol: TCP
+
+eureka:
+  image:
+    repository: 192.168.4.112/sc/k8s-sc-eureka
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8080
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 256m
+    limits:
+      memory: 1024Mi
+      cpu: 500m
+  ports: 
+  - name: server-port
+    containerPort: 8761
+    protocol: TCP   
+  env: 
+  volumeMounts: 
+  volumes: 
+  nodeSelector: {}
+  tolerations: {} 
+  affinity: {}
+  podAnnotations: {}
+
+eureka_master:
+  name: eureka-master
+  image:
+    repository: 192.168.4.112/sc/k8s-sc-eureka
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8080
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 256m
+    limits:
+      memory: 1024Mi
+      cpu: 500m
+  ports: 
+  - name: server-port
+    containerPort: 8761
+    protocol: TCP   
+  env: 
+  volumeMounts: 
+  volumes: 
+  nodeSelector: {}
+  tolerations: {} 
+  affinity: {}
+  podAnnotations: {}
+  ingress:
+    host: eureka-master.smile.com
+
+eureka_backup01:
+  name: eureka-backup01
+  image:
+    repository: 192.168.4.112/sc/k8s-sc-eureka
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8080
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 256m
+    limits:
+      memory: 1024Mi
+      cpu: 500m
+  ports: 
+  - name: server-port
+    containerPort: 8761
+    protocol: TCP   
+  env: 
+  volumeMounts: 
+  volumes: 
+  nodeSelector: {}
+  tolerations: {} 
+  affinity: {}
+  podAnnotations: {}
+  ingress:
+    host: eureka-backup01.smile.com
+
+eureka_backup02:
+  name: eureka-backup02
+  image:
+    repository: 192.168.4.112/sc/k8s-sc-eureka
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8080
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 256m
+    limits:
+      memory: 1024Mi
+      cpu: 500m
+  ports: 
+  - name: server-port
+    containerPort: 8761
+    protocol: TCP   
+  env: 
+  volumeMounts: 
+  volumes: 
+  nodeSelector: {}
+  tolerations: {} 
+  affinity: {}
+  podAnnotations: {}
+  ingress:
+    host: eureka-backup02.smile.com
+
+service_user:
+  name: service-user
+  image:
+    repository: 192.168.4.112/sc/k8s-sc-user
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8080
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 256m
+    limits:
+      memory: 1024Mi
+      cpu: 500m
+  ports:   
+  env: 
+  volumeMounts: 
+  volumes: 
+  nodeSelector: {}
+  tolerations: {} 
+  affinity: {}
+  podAnnotations: {} 
+
+service_company:
+  name: service-company
+  image:
+    repository: 192.168.4.112/sc/k8s-sc-company
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8080
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 256m
+    limits:
+      memory: 1024Mi
+      cpu: 500m
+  ports:  
+  env: 
+  volumeMounts: 
+  volumes: 
+  nodeSelector: {}
+  tolerations: {} 
+  affinity: {}
+  podAnnotations: {}
+
+service_gateway:
+  name: service-gateway
+  image:
+    repository: 192.168.4.112/sc/k8s-sc-gateway
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8080
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 256m
+    limits:
+      memory: 1024Mi
+      cpu: 500m
+  ports:  
+  env: 
+  volumeMounts: 
+  volumes: 
+  nodeSelector: {}
+  tolerations: {} 
+  affinity: {}
+  podAnnotations: {}  

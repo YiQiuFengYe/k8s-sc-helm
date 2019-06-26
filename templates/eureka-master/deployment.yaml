@@ -1,0 +1,74 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name:  "{{ template "k8s-sc.eureka_master" . }}"
+  labels:
+{{ include "k8s-sc.labels" . | indent 4 }}
+    component: {{ .Values.eureka_master.name }}
+spec:
+  replicas: {{ .Values.eureka_master.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+{{ include "k8s-sc.matchLabels" . | indent 6 }}
+      component: {{ .Values.eureka_master.name }}
+  template:
+    metadata:
+      labels:
+{{ include "k8s-sc.matchLabels" .| indent 8 }}
+        component: {{ .Values.eureka_master.name }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 6 }}  
+      {{- end -}}  
+      containers:
+      - image: "{{ .Values.eureka_master.image.repository }}:{{ .Values.eureka_master.image.tag }}"
+        name: {{ .Values.eureka_master.name }}
+        {{- if .Values.eureka_master.resources }} {{/* setting resources config*/}}
+        resources:        
+{{ toYaml .Values.eureka_master.resources | indent 10 }}
+        {{- end }}
+        ports: {{/* setting prots config */}}
+        {{- if .Values.eureka_master.ports }}
+{{ toYaml .Values.eureka_master.ports | indent 8 }}
+        {{- end }}
+        env: {{/* setting env config */}}
+        {{- if .Values.common.pod.env }}
+{{ toYaml .Values.common.pod.env | indent 8 }}
+        {{- end }}
+        {{- if .Values.eureka_master.env }}
+{{ toYaml .Values.eureka_master.env | indent 8 }}
+        {{- end }}
+        volumeMounts: {{/* setting volumeMounts config */}}
+        {{- if .Values.common.pod.volumeMounts }}
+{{ toYaml .Values.common.pod.volumeMounts | indent 8 }}
+        {{- end }}
+        {{- if .Values.eureka_master.volumeMounts }}
+{{ toYaml .Values.eureka_master.volumeMounts | indent 8 }}
+        {{- end }}
+        imagePullPolicy: IfNotPresent
+      volumes: {{/* setting volumes config */}}
+      {{- if .Values.common.pod.volumes }}
+{{ toYaml .Values.common.pod.volumes | indent 6 }}
+      {{- end }}
+      {{- if .Values.common.pod.volumes }}
+{{ toYaml .Values.eureka_master.volumes | indent 6 }}
+      {{- end }}
+      nodeSelector:
+      {{- with .Values.eureka_master.nodeSelector }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+      affinity:
+      {{- with .Values.eureka_master.affinity }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+      tolerations:
+      {{- with .Values.eureka_master.tolerations }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+

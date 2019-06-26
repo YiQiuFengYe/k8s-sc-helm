@@ -1,0 +1,74 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name:  "{{ template "k8s-sc.eureka_backup02" . }}"
+  labels:
+{{ include "k8s-sc.labels" . | indent 4 }}
+    component: {{ .Values.eureka_backup02.name }}
+spec:
+  replicas: {{ .Values.eureka_backup02.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+{{ include "k8s-sc.matchLabels" . | indent 6 }}
+      component: {{ .Values.eureka_backup02.name }}
+  template:
+    metadata:
+      labels:
+{{ include "k8s-sc.matchLabels" .| indent 8 }}
+        component: {{ .Values.eureka_backup02.name }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 6 }}  
+      {{- end -}}  
+      containers:
+      - image: "{{ .Values.eureka_backup02.image.repository }}:{{ .Values.eureka_backup02.image.tag }}"
+        name: {{ .Values.eureka_backup02.name }}
+        {{- if .Values.eureka_backup02.resources }} {{/* setting resources config*/}}
+        resources:        
+{{ toYaml .Values.eureka_backup02.resources | indent 10 }}
+        {{- end }}
+        ports: {{/* setting prots config */}}
+        {{- if .Values.eureka_backup02.ports }}
+{{ toYaml .Values.eureka_backup02.ports | indent 8 }}
+        {{- end }}
+        env: {{/* setting env config */}}
+        {{- if .Values.common.pod.env }}
+{{ toYaml .Values.common.pod.env | indent 8 }}
+        {{- end }}
+        {{- if .Values.eureka_backup02.env }}
+{{ toYaml .Values.eureka_backup02.env | indent 8 }}
+        {{- end }}
+        volumeMounts: {{/* setting volumeMounts config */}}
+        {{- if .Values.common.pod.volumeMounts }}
+{{ toYaml .Values.common.pod.volumeMounts | indent 8 }}
+        {{- end }}
+        {{- if .Values.eureka_backup02.volumeMounts }}
+{{ toYaml .Values.eureka_backup02.volumeMounts | indent 8 }}
+        {{- end }}
+        imagePullPolicy: IfNotPresent
+      volumes: {{/* setting volumes config */}}
+      {{- if .Values.common.pod.volumes }}
+{{ toYaml .Values.common.pod.volumes | indent 6 }}
+      {{- end }}
+      {{- if .Values.common.pod.volumes }}
+{{ toYaml .Values.eureka_backup02.volumes | indent 6 }}
+      {{- end }}
+      nodeSelector:
+      {{- with .Values.eureka_backup02.nodeSelector }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+      affinity:
+      {{- with .Values.eureka_backup02.affinity }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+      tolerations:
+      {{- with .Values.eureka_backup02.tolerations }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+

@@ -1,0 +1,37 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: "{{ template "k8s-sc.service_gateway" . }}"
+  namespace: {{ .Values.common.ns }}
+  labels:
+{{ include "k8s-sc.labels" . | indent 4 }}
+    component: {{ .Values.service_gateway.name }}
+spec:
+  selector:
+{{ include "k8s-sc.matchLabels" . | indent 4 }}
+    component: {{ .Values.service_gateway.name }}
+  type: ClusterIP
+  ports: {{/* setting ports config */}}
+    {{- if .Values.common.services.ports }}
+{{ toYaml .Values.common.services.ports | indent 2 }}
+    {{- end }}
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ template "k8s-sc.service_gateway" . }}"
+  namespace: {{ .Values.common.ns }}
+  labels:
+{{ include "k8s-sc.labels" . | indent 4 }}
+    component: {{ .Values.service_gateway.name }}
+spec:
+  rules:
+  - host: gateway.smile.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: "{{ template "k8s-sc.service_gateway" . }}"
+          servicePort: {{ .Values.service_gateway.service.port }}

@@ -1,0 +1,18 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: "{{ template "k8s-sc.service_user" . }}"
+  namespace: {{ .Values.common.ns }}
+  labels:
+{{ include "k8s-sc.labels" . | indent 4 }}
+    component: {{ .Values.service_user.name }}
+spec:
+  selector:
+{{ include "k8s-sc.matchLabels" . | indent 4 }}
+    component: {{ .Values.service_user.name }}
+  type: ClusterIP
+  ports: {{/* setting ports config */}}
+    {{- if .Values.common.services.ports }}
+{{ toYaml .Values.common.services.ports | indent 2 }}
+    {{- end }}
+

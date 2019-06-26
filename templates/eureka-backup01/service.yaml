@@ -1,0 +1,37 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: "{{ template "k8s-sc.eureka_backup01" . }}"
+  namespace: {{ .Values.common.ns }}
+  labels:
+{{ include "k8s-sc.labels" . | indent 4 }}
+    component: {{ .Values.eureka_backup01.name }}
+spec:
+  selector:
+{{ include "k8s-sc.matchLabels" . | indent 4 }}
+    component: {{ .Values.eureka_backup01.name }}
+  type: ClusterIP
+  ports: {{/* setting ports config */}}
+    {{- if .Values.common.services.ports }}
+{{ toYaml .Values.common.services.ports | indent 2 }}
+    {{- end }}
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ template "k8s-sc.eureka_backup01" . }}"
+  namespace: {{ .Values.common.ns }}
+  labels:
+{{ include "k8s-sc.labels" . | indent 4 }}
+    component: {{ .Values.eureka_backup01.name }}
+spec:
+  rules:
+  - host: {{ .Values.eureka_backup01.ingress.host }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: "{{ template "k8s-sc.eureka_backup01" . }}"
+          servicePort: {{ .Values.eureka_backup01.service.port }}

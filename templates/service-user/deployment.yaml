@@ -1,0 +1,77 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name:  "{{ template "k8s-sc.service_user" . }}"
+  labels:
+{{ include "k8s-sc.labels" . | indent 4 }}
+    component: {{ .Values.service_user.name }}
+spec:
+  replicas: {{ .Values.service_user.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+{{ include "k8s-sc.matchLabels" . | indent 6 }}
+      component: {{ .Values.service_user.name }}
+  template:
+    metadata:
+      labels:
+{{ include "k8s-sc.matchLabels" .| indent 8 }}
+        component: {{ .Values.service_user.name }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 6 }}  
+      {{- end -}}  
+      containers:
+      - image: "{{ .Values.service_user.image.repository }}:{{ .Values.service_user.image.tag }}"
+        name: service-user
+        {{- if .Values.service_user.resources }} {{/* setting resources config*/}}
+        resources:        
+{{ toYaml .Values.service_user.resources | indent 10 }}
+        {{- end }}
+        ports: {{/* setting prots config */}}
+        {{- if .Values.common.pod.ports }}
+{{ toYaml .Values.common.pod.ports | indent 8 }}
+        {{- end }}
+        {{- if .Values.service_user.ports }}
+{{ toYaml .Values.service_user.ports | indent 8 }}
+        {{- end }}
+        env: {{/* setting env config */}}
+        {{- if .Values.common.pod.env }}
+{{ toYaml .Values.common.pod.env | indent 8 }}
+        {{- end }}
+        {{- if .Values.service_user.env }}
+{{ toYaml .Values.service_user.env | indent 8 }}
+        {{- end }}
+        volumeMounts: {{/* setting volumeMounts config */}}
+        {{- if .Values.common.pod.volumeMounts }}
+{{ toYaml .Values.common.pod.volumeMounts | indent 8 }}
+        {{- end }}
+        {{- if .Values.service_user.volumeMounts }}
+{{ toYaml .Values.service_user.volumeMounts | indent 8 }}
+        {{- end }}
+        imagePullPolicy: IfNotPresent
+      volumes: {{/* setting volumes config */}}
+      {{- if .Values.common.pod.volumes }}
+{{ toYaml .Values.common.pod.volumes | indent 6 }}
+      {{- end }}
+      {{- if .Values.common.pod.volumes }}
+{{ toYaml .Values.service_user.volumes | indent 6 }}
+      {{- end }}
+      nodeSelector:
+      {{- with .Values.service_user.nodeSelector }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+      affinity:
+      {{- with .Values.service_user.affinity }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+      tolerations:
+      {{- with .Values.service_user.tolerations }}
+{{ toYaml . | indent 6 }}
+      {{- end}}
+
